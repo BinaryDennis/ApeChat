@@ -131,6 +131,45 @@ This action allows you to fetch the user profile for the given user.
     + Attributes (Error404)
 
             
+#### Update Avatar [POST /users/{id}/avatar]
+
+This action allows you to update a users avatar image. It is also possbile to update the avatar using the ```PATCH``` action with a multi-part body.
+
+Note that the image being uploaded cannot be larger than **1.2 MB** and must be either in *jpg* or *png* format, preferably ```jpg```.
+
++ Parameters
+    + id: `12345678` (string, required) - A userId 
+
++ Request Update Avatar (image/jpeg)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+    
+
++ Response 200 (application/json)
+    
+
++ Response 400 (application/json)
+    Bad reqeust
+
+    + Attributes (Error400)
+
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+
++ Response 404 (application/json)
+    The requested User does not exist
+
+    + Attributes (Error404)
+
+
+
 
 #### Update User [PATCH /users/{id}]
 
