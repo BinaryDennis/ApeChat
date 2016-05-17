@@ -1,0 +1,692 @@
+FORMAT: 1A
+HOST: http://api.apechat-my-host.com/
+
+# ApeChat
+## General info
+
+This is a demo backend API for excersice and testing purpose created by Dennis Korkchi @ Apegroup AB. ApeChat is a standard chat/messaging service.
+
+This is _**version**_ 1 of this API.
+
+Authorization is **mandatory** in all requests, **except** for _Authenticate User_. It is based on the HTTP Authorizaion header, where we expect it to contain the string ```Bearer <JWT-token>```
+
+
+### User Resource [/users/]
+
+Managing users.
+
+
+#### Authenticate User [POST]
+
+This actions allows you to authenticate a user. 
+
+The request takes a JSON object containing the following attributes (any value is accepted for this demo API):
+
+| Name                                  | Type    | Required | Description                                         |
+|---------------------------------------|---------|----------|-----------------------------------------------------|
+| X-Apegroup-Secret                     | string  | yes      | An apegroup secret                                  |
+| X-Apegroup-AuthMethod                 | string  | yes      | Authorization method                                |
+
+
+A successful response will give you a ```User``` object and  a ```token``` object to be used in **Authorization header** in all subsequent requests.  
+
+**NOTE** that if you recevie a _http 401 Unauthorized_ response for any other endpoint action, you need to **re-authenticate** using this endpoint action and receive a new JWT token.
+
+
+
++ Request Authenticate User (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+
+    + Body
+
+            {
+                "X-Apegroup-Secret" : "we-love-apes-and-monkeys-and-all-other-animals-as-well",
+                "X-Apegroup-AuthMethod" : "debug"
+            }
+
+
++ Response 201 (application/json)
+
+    + Attributes (object)
+        + token: `eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE0NjI2NTQyNjYsImV4cCI6MTQ2Mjc0MDY2NiwiaXNzIjoiY29tLnNuYXBiYWNrLWFwcC5qd3QtaXNzdWVyIiwic3ViIjo1NzI0MTYwNjEzNDE2OTYwfQ.vngqLPLMC632WoH2BqLSzYqvXqvaAQUAnyUjS8fw7Gc` (required, string) - a valid JWT token to be used as Authorization header for all subsequent requests
+        + user (required, User) - the user profile
+
+
++ Response 400 (application/json)
+    Invalid parameters supplied
+
+    + Attributes (ErrorInvalidParameterValue)
+
+    
+
++ Response 401 (application/json)
+    Invalid credentials
+
+    + Attributes (ErrorInvalidCredentials)
+        
+
+
+
+#### Get All Users [GET]
+
+This action allows you to fetch all the users in the service. Use this action to allow the end user to add a friend using the ```.../friends/``` endpoint.
+
+
++ Request Get All User (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+            
+
++ Response 200 (application/json)
+
+    + Attributes
+        + users (required, array[User]) - list of all users in the service
+        
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+            
+
+
+#### Get User [GET /users/{id}]
+
+This action allows you to fetch the user profile for the given user. 
+
+
++ Parameters
+    + id: `12345678` (string, required) - A userId 
+
++ Request Get User (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+            
+
++ Response 200 (application/json)
+
+    + Attributes
+        + user (required, User) - the user profile
+        
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+            
++ Response 404 (application/json)
+    The requested User does not exist
+
+    + Attributes (Error404)
+
+            
+
+#### Update User [PATCH /users/{id}]
+
+This action allows you to update a user profile, _(partial update, i.e. will not overwrite parameters not provided)_ for the given user. 
+
+To update one or some of the user's profile parameter **(excluding the avatar image)**, send a request with a json body specifing the parts you want to update, the semantics of the json body must follow the **RFC 6902** ```http://tools.ietf.org/html/rfc6902```.
+
+To update the user's avatar image, send a **multipart/form-data** request with the avatar image as a jpg representation.
+To update the user's avatar image **and** the user's other profile parameters, add a json body to the multipart/form-data request, as the example request shown.
+
+Note that the ```Content-Dispostion``` header in the body section of the image, must be exacly as follows: **```Content-Disposition: form-data; name="avatar"; filename="image.jpg"```**
+
+Also note that the image being uploaded cannot be larger than **1.2 MB** and must be either in *jpg* or *png* format, preferably ```jpg```.
+
++ Parameters
+    + id: `12345678` (string, required) - A userId 
+
++ Request Update User (multipart/form-data; boundary=BOUNDARY)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+    
+    + Body 
+
+            --BOUNDARY
+            Content-Disposition: form-data; name="jsonBody"
+            Content-Type: application/json
+
+            {
+                "operations" : [
+                    { "op": "replace", "path": "/firstname", "value": "DonKorkchilone" },
+                    { "op": "remove", "path": "/lastname" }
+                ]
+            }
+
+            --BOUNDARY
+            Content-Disposition: form-data; name="avatar"; filename="image.jpg"
+            Content-Type: image/jpeg
+
+            /9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a
+            HBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIy
+            MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIA
+            AhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFAEB
+            AAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AL+AD//Z
+            --BOUNDARY--
+
+
++ Response 200 (application/json)
+    
+
++ Response 400 (application/json)
+    Bad reqeust
+
+    + Attributes (Error400)
+
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+
++ Response 404 (application/json)
+    The requested User does not exist
+
+    + Attributes (Error404)
+
+            
+
+            
+
+
+#### Delete User [DELETE /users/{id}]
+
+You may delete an existing User using this action. 
+
+
++ Parameters
+    + id: `12345678` (string, required) - A userId 
+
++ Request Delete User (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
+
++ Response 204
+
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+            
++ Response 404 (application/json)
+    The requested User does not exist
+
+    + Attributes (Error404)
+            
+
+
+
+
+### Device Resource [/users/{id}/devices]
+
+Managin users devices.
+
+
++ Parameters
+    + id: `12345678` (string, required) - A userId 
+
+
+#### Get Devices [GET]
+
+This action allows you to fetch all the devices for a given userId. 
+
+Note that a user _may_ have **several devices**.
+
+
++ Request Get Devices (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
+
++ Response 200 (application/json)
+ 
+    + Attributes (object)
+        + devices (required, array[Device]) - list of devices
+
+   
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+
++ Response 404 (application/json)
+    The requested User does not exist
+
+    + Attributes (Error404)
+
+
+
+
+#### Add Device [POST]
+
+This action allows you to add a device for a given user. The push token provided will be used to push out messags as they arrive to the server. A request trying to add a user device, that already exists, will simply **overwrite** the whole "device-record" and give the same http 200 OK response as if it was being added for the first time.
+
+Note that a user _may_ have **several devices**.
+
+
+The request takes a JSON object containing the following attributes:
+
+| Name                                  | Type    | Required | Description                                         |
+|---------------------------------------|---------|----------|-----------------------------------------------------|
+| deviceName                            | string  | no       | The device name,  eg DennisRazor                    |
+| deviceModel                           | string  | yes      | The device model, eg iPhone                         |
+| vendorIdentifier                      | string  | yes      | The unique vendor id (based on device+app)          |
+| pushToken                             | string  | yes      | The unique push notification token                  |
+
+
+A successful response will _not_ give any data back. If you need to remove a user device you simply use the *vendorIdentifier* to target a device.
+
+
++ Request Add Device (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
+   + Body
+
+            {
+                "deviceName": "DennisRazor",
+                "deviceModel": "iPhone",
+                "vendorIdentifier": "EA1234124ABC345345BD234242",
+                "pushToken": "AA2342455756765EE345235443CCC2342D1A"
+            }
+
+
++ Response 201 (application/json)
+
+
++ Response 400 (application/json)
+    Invalid parameters supplied
+
+    + Attributes (ErrorInvalidParameterValue)
+
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+
++ Response 404 (application/json)
+    The requested User does not exist
+
+    + Attributes (Error404)
+
+            
+
+
+
+#### Remove Device [DELETE /users/{id}/devices/{vendorId}]
+
+You may delete an existing User Device using this action. 
+
+
++ Parameters
+    + id: `12345678` (string, required) - A userId (NOT a phone number)
+    + vendorId: `EA1234124ABC345345BD234242` (string, required) - The unique vendor id (based on device+app)
+
++ Request Remove Device (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
+
++ Response 204
+
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+            
++ Response 404 (application/json)
+    The requested User or User Device does not exist
+
+    + Attributes (Error404)
+
+
+
+
+
+
+
+### Friend Resource [/users/{id}/friends]
+
+Managin friends of users.
+
+
++ Parameters
+    + id: `12345678` (string, required) - A userId 
+
+
+#### Get Friends [GET]
+
+This action allows you to fetch all the friends for a given userId. 
+
+
++ Request Get Friends (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
+
++ Response 200 (application/json)
+ 
+    + Attributes (object)
+        + friends (optional, array[User]) - a list of friends of the user 
+   
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+
++ Response 404 (application/json)
+    The requested User does not exist
+
+    + Attributes (Error404)
+
+  
+
+
+
+#### Add Friend [POST /users/{id}/friends/{friendId}]
+
+This action allows you to add a friend for a given user. 
+
+A successful response will return a User object representing the newly added friend.
+
+
++ Parameters
+    + friendId: `6666666` (string, required) - A userId to be added as friend
+
+
++ Request Add Friend (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
+
++ Response 201 (application/json)
+    
+    + Attributes
+        + friend (required, User) - the user that was added as a friend
+   
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+
++ Response 404 (application/json)
+    The requested User does not exist
+
+    + Attributes (Error404)
+
+            
+
+
+
+#### Remove Friend [DELETE /users/{id}/friends/{friendId}]
+
+You may remove a user as a friend using this action. 
+
++ Parameters
+    + friendId: `6666666` (string, required) - A userId (NOT a phone number) to be removed as friend
+
++ Request Remove Friend (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
+
++ Response 204
+
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+            
++ Response 404 (application/json)
+    The requested User or User Device does not exist
+
+    + Attributes (Error404)
+
+
+
+
+
+
+
+
+### Message Resource [/message{?since}{?status}{?senderId}{?receiverId}]
+
+Sending & fectching messages.
+
+#### List All Messages [GET]
+
+This action will allow you to list all your _received_ messages from other users, but also to list all your messages _sent to_ other users.
+
+Note that all query parameters are optional. 
+
+If parameter ```since``` is not provided the response will return the latest **10** messages available. 
+
+If  parameter ```senderId``` nor ```receiverId``` are provided, the response will return _received_ messages for the **userId** specified in the _JWT-token_.
+
+If parameter ```senderId```/```receiverId``` is provided, the response will return all messages where the **sender/receiver** is equal to the value of the given parameter ```senderId```/```receiverId```, thus the **userId** in the JWT-Token will **not** be used for selecting/filtering messages. The userId in the JWT-Token will only be used for authorization in this case.
+
+In order to fetch all messages that you have sent to other users, simply set ```senderId``` equal to your own userId.
+
+Note that **pagination** is not yet supported.
+
+The result set will be sorted ascending based on ```createdAt``` timestamp.
+
+Each object in the response will have a **status** field, which can have the following values: ```unread```, ```read```
+
+
++ Parameters
+    + since: `2016-02-28T12:48:15+00:00` (string, optional) - A valid ISO8601 date limiting the response by time
+    + status: `unread` (enum[string], optional) - the status of the Ping
+        + Default: `unread`
+        + Members
+            + `unread`
+            + `read`            
+    + senderId: `12345678` (string, optional) - The userId of the sender
+    + receiverId: `87654321` (string, optional) - The userId of the receiver
+
++ Request List Messages (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
++ Response 200 (application/json)
+
+    + Attributes (object)
+        + messages (required, array[Message]) - list of messages
+
+
+
++ Response 400 (application/json)
+    Invalid request: unknown value provided for query parameter **status**
+
+    + Attributes (ErrorInvalidParameterValue)
+
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+
+
+#### Send Message [POST]
+
+You may create a new message using this action. 
+
+The request takes a JSON object containing the following attributes:
+
+| Name                                  | Type    | Required | Description                                         |
+|---------------------------------------|---------|----------|-----------------------------------------------------|
+| receiverId                            | string  | yes      | userId of the receiver                              |
+| text                                  | string  | yes      | the content of the message                          |
+
+
+A successful message request will trigger a **Push notification** to the receiver, the body of that notification will hold the complete message object.
+
+
++ Request Send Message (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
+    + Body
+
+            {
+                "receiverId" : "87654321",
+                "text" : "How u doin' babe?"
+            }
+
+
+ 
++ Response 201 (application/json)
+        
+            
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+
+            
+#### Delete Message [DELETE /message/{messageId}]
+
+You may delete an existing message using this action. 
+
++ Parameters
+    + messageId: `111` (number, required) - An existing messageId to delete
+
+
++ Request Delete Message (application/json)
+
+    + Headers
+
+            Accept-Language: sv-SE
+            Authorization: Bearer <JWT-token>
+
+
++ Response 204
+
+
++ Response 401 (application/json)
+    The supplied token is not valid
+
+    + Attributes (ErrorInvalidJWT)
+
+            
++ Response 404 (application/json)
+    The requested message does not exist
+
+    + Attributes (Error404)
+
+            
+
+
+
+
+
+
+## Data Structures
+
+### ErrorInvalidParameterValue
++ errorCode: `1010` (required, number) - internal error code
++ errorTitle:  `Invalid parameter value` (required, string) - error title
++ errorDescription: `Invalid value for query parameter XXX` (required, string) - error description
+
+### ErrorInvalidCredentials
++ errorCode: `1030` (required, number) - internal error code
++ errorTitle:  `Invalid Credentials` (required, string) - error title
++ errorDescription: `Invalid authorization credentials` (required, string) - error description
+
+### ErrorInvalidJWT 
++ errorCode: `1040` (required, number) - internal error code
++ errorTitle:  `Invalid Token` (required, string) - error title
++ errorDescription: `Invalid JWT token provided` (required, string) - error description
+
+### Error400
++ errorCode: `1050` (required, number) - internal error code
++ errorTitle:  `Bad request request` (required, string) - error title
++ errorDescription: `The request is invalid due to ...` (required, string) - error description
+
+### Error404
++ errorCode: `1060` (required, number) - internal error code
++ errorTitle:  `Resource not found` (required, string) - error title
++ errorDescription: `User/Device/Ping/Pong with id XYZ could not be found` (required, string) - error description
+
+### User
++ userId: `12345678` (required, number) - the unique userId of the user
++ firstname: `Dennis` (optional, string) - the firstname of the user
++ lastname: `Binary` (optional, string) - the lastname of the user
++ gender: `male`, `female`, `other` (optional, enum[string]) - the gender of the user
++ createdAt: `2016-04-28T12:48:15+00:00` (optional, string) - time when user object was created
++ birthyear: `1980` (optional, number) - the year that the user was born
++ avatarUrl: `https://api.sandbox.snapback.com/users/0727001988/avatar.jpg` (optional, string) - the URL to the users avatar image
+
+### Message
++ senderId: `12345678` (required, string) - the userId of sender
++ receiverId: `87654321` (required, string) - the userId of receiver
++ createdAt: `2016-04-26T12:48:15+02:00` (required, string) - ISO8601 date of creation time
++ messageId: `222` (required, number) - the id of the message
++ status: `unread`,`read` (required, enum[string]) - the status of the message. 
+    
+### Device
++ vendorIdentifier: `EA1234124ABC345345BD234242` (required, string) - The unique vendor id (based on device+app) 
++ deviceModel: `iPhone` (required, string) - the device model
++ pushToken: `999` (required, string) - The unique push notification token 
++ createdAt: `2016-04-28T12:48:15+00:00` (required, string) - ISO8601 date of creation time
++ deviceName: `DennisRazor` (optional, string) - the device name set by the user
