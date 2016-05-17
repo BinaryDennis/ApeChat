@@ -593,10 +593,13 @@ A successful message request will trigger a **Push notification** to the receive
             }
 
 
- 
+
 + Response 201 (application/json)
-        
-            
+
+    + Attributes
+        + message (required, Message) - the created message including a unique messageId
+    
+
 + Response 401 (application/json)
     The supplied token is not valid
 
