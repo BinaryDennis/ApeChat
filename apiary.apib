@@ -85,8 +85,7 @@ This action allows you to fetch all the users in the service. Use this action to
 
 + Response 200 (application/json)
 
-    + Attributes
-        + users (required, array[User]) - list of all users in the service
+    + Attributes (required, array[User])
         
 
 + Response 401 (application/json)
@@ -204,7 +203,7 @@ Also note that the image being uploaded cannot be larger than **1.2 MB** and mus
     + Body 
 
             --BOUNDARY
-            Content-Disposition: form-data; name="jsonBody"
+            Content-Disposition: form-data; filename="jsonData"
             Content-Type: application/json
 
             {
@@ -213,9 +212,8 @@ Also note that the image being uploaded cannot be larger than **1.2 MB** and mus
                     { "op": "remove", "path": "/lastname" }
                 ]
             }
-
             --BOUNDARY
-            Content-Disposition: form-data; name="avatar"; filename="image.jpg"
+            Content-Disposition: form-data; filename="image.jpg"
             Content-Type: image/jpeg
 
             /9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a
@@ -311,9 +309,7 @@ Note that a user _may_ have **several devices**.
 
 + Response 200 (application/json)
  
-    + Attributes (object)
-        + devices (required, array[Device]) - list of devices
-
+    + Attributes (required, array[Device])
    
 
 + Response 401 (application/json)
@@ -452,9 +448,8 @@ This action allows you to fetch all the friends for a given userId.
 
 + Response 200 (application/json)
  
-    + Attributes (object)
-        + friends (optional, array[User]) - a list of friends of the user 
-   
+    + Attributes (optional, array[User])
+
 
 + Response 401 (application/json)
     The supplied token is not valid
@@ -492,9 +487,8 @@ A successful response will return a User object representing the newly added fri
 
 + Response 201 (application/json)
     
-    + Attributes
-        + friend (required, User) - the user that was added as a friend
-   
+    + Attributes (required, User)
+        
 
 + Response 401 (application/json)
     The supplied token is not valid
@@ -591,9 +585,7 @@ Each object in the response will have a **status** field, which can have the fol
 
 + Response 200 (application/json)
 
-    + Attributes (object)
-        + messages (required, array[Message]) - list of messages
-
+    + Attributes (required, array[Message])
 
 
 + Response 400 (application/json)
@@ -642,9 +634,7 @@ A successful message request will trigger a **Push notification** to the receive
 
 + Response 201 (application/json)
 
-    + Attributes
-        + message (required, Message) - the created message including a unique messageId
-    
+    + Attributes (required, Message)
 
 + Response 401 (application/json)
     The supplied token is not valid
