@@ -85,7 +85,7 @@ This action allows you to fetch all the users in the service. Use this action to
 
 + Response 200 (application/json)
 
-    + Attributes (required, array[User])
+    + Attributes (required, array[User, User, User])
         
 
 + Response 401 (application/json)
@@ -309,7 +309,7 @@ Note that a user _may_ have **several devices**.
 
 + Response 200 (application/json)
  
-    + Attributes (required, array[Device])
+    + Attributes (required, array[Device, Device])
    
 
 + Response 401 (application/json)
@@ -448,7 +448,7 @@ This action allows you to fetch all the friends for a given userId.
 
 + Response 200 (application/json)
  
-    + Attributes (optional, array[User])
+    + Attributes (optional, array[User, User, User])
 
 
 + Response 401 (application/json)
@@ -585,7 +585,7 @@ Each object in the response will have a **status** field, which can have the fol
 
 + Response 200 (application/json)
 
-    + Attributes (required, array[Message])
+    + Attributes (required, array[Message, Message, Message])
 
 
 + Response 400 (application/json)
